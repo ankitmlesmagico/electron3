@@ -1,0 +1,22 @@
+[tool.poetry]
+name = "webautomate_ai"
+version = "0.1.0"
+description = "A desktop automation tool using browser-use and Playwright"
+authors = ["Ankit Patidar <ankit@example.com>"]
+license = "MIT"
+readme = "README.md"
+packages = [
+    { include = "webautomate_ai" }
+]
+
+[tool.poetry.dependencies]
+python = ">=3.11,<3.14"
+browser-use = ">=0.4.4,<0.5.0"
+playwright = ">=1.53.0,<2.0.0"
+google-generativeai = ">=0.8.5,<0.9.0"
+httpx = ">=0.28.1,<0.29.0"
+pyinstaller = "^6.14.2"
+
+[build-system]
+requires = ["poetry-core>=2.0.0,<3.0.0"]
+build-backend = "poetry.core.masonry.api"

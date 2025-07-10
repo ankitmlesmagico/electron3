@@ -1,0 +1,108 @@
+{
+  "name": "webautomate-ai",
+  "version": "1.0.0",
+  "description": "Web Automation AI App",
+  "main": "main.js",
+  "scripts": {
+    "start": "electron .",
+    "build": "electron-builder",
+    "build-linux": "electron-builder --linux",
+    "build-windows": "electron-builder --win",
+    "build-mac": "electron-builder --mac",
+    "build-python": "cd webautomate_ai && poetry run pyinstaller --onefile --console --name WebAgent --distpath ../dist/python-executable --add-data 'modules:modules' --add-data 'utils:utils' --hidden-import browser_use --hidden-import playwright --hidden-import google.generativeai --hidden-import httpx --hidden-import dotenv agent.py",
+    "build-python-win": "cd webautomate_ai && poetry run pyinstaller --onefile --console --name WebAgent.exe --distpath ../dist/python-executable --add-data 'modules:modules' --add-data 'utils:utils' --hidden-import browser_use --hidden-import playwright --hidden-import google.generativeai --hidden-import httpx --hidden-import dotenv agent.py",
+    "build-python-mac": "cd webautomate_ai && poetry run pyinstaller --onefile --console --name WebAgent --distpath ../dist/python-executable --add-data 'modules:modules' --add-data 'utils:utils' --hidden-import browser_use --hidden-import playwright --hidden-import google.generativeai --hidden-import httpx --hidden-import dotenv agent.py",
+    "build-all": "npm run build-python && npm run build-linux",
+    "build-all-windows": "npm run build-python-win && npm run build-windows",
+    "build-all-mac": "npm run build-python-mac && npm run build-mac",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "automation",
+    "web",
+    "ai"
+  ],
+  "author": "Your Name",
+  "license": "MIT",
+  "devDependencies": {
+    "electron": "^37.2.0",
+    "electron-builder": "^26.0.12"
+  },
+  "build": {
+    "appId": "com.yourcompany.webautomate",
+    "productName": "WebAutomate AI",
+    "directories": {
+      "output": "dist"
+    },
+    "extraResources": [
+      {
+        "from": "dist/python-executable/",
+        "to": "python-executable/"
+      }
+    ],
+    "files": [
+      "main.js",
+      "preload.js",
+      "render.js",
+      "index.html",
+      "package.json",
+      "icon.png",
+      "!webautomate_ai/",
+      "!node_modules/",
+      "!**/*.pyc",
+      "!**/__pycache__/",
+      "!.git/",
+      "!.env"
+    ],
+    "win": {
+      "target": [
+        {
+          "target": "nsis",
+          "arch": [
+            "x64"
+          ]
+        },
+        {
+          "target": "portable",
+          "arch": [
+            "x64"
+          ]
+        }
+      ]
+    },
+    "mac": {
+      "target": [
+        {
+          "target": "dmg",
+          "arch": [
+            "x64",
+            "arm64"
+          ]
+        },
+        {
+          "target": "zip",
+          "arch": [
+            "x64",
+            "arm64"
+          ]
+        }
+      ]
+    },
+    "linux": {
+      "target": [
+        {
+          "target": "AppImage",
+          "arch": [
+            "x64"
+          ]
+        },
+        {
+          "target": "snap",
+          "arch": [
+            "x64"
+          ]
+        }
+      ]
+    }
+  }
+}
