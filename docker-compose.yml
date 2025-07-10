@@ -1,0 +1,13 @@
+version: '3.8'
+
+services:
+  webautomate:
+    build: .
+    volumes:
+      - .:/app
+      - /app/node_modules
+    environment:
+      - DISPLAY=:99
+    privileged: true
+    tty: true
+    stdin_open: true

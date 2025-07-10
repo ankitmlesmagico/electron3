@@ -29,12 +29,31 @@ function createWindow() {
 function getExecutablePath() {
   if (app.isPackaged) {
     // In production, use the bundled executable
-    const executableName =
-      process.platform === 'win32' ? 'WebAgent.exe' : 'WebAgent'
-    return path.join(process.resourcesPath, 'python-executable', executableName)
+    const executableName = process.platform === 'win32' ? 'WebAgent.exe' : 'WebAgent';
+    
+    // First try the app's resources directory
+    const resourcesPath = process.resourcesPath || process.mainModule.filename.split('/').slice(0, -1).join('/');
+    const possiblePaths = [
+      path.join(resourcesPath, 'app', 'python-executable', executableName), // For ASAR unpacked
+      path.join(resourcesPath, 'python-executable', executableName), // For direct resources
+      path.join(process.cwd(), 'python-executable', executableName), // For development
+    ];
+    
+    // Find the first path that exists
+    for (const possiblePath of possiblePaths) {
+      try {
+        fs.accessSync(possiblePath, fs.constants.X_OK);
+        return possiblePath;
+      } catch (e) {
+        console.log(`Path not found: ${possiblePath}`);
+      }
+    }
+    
+    console.error('Could not find Python executable in any of the expected locations');
+    return null;
   } else {
     // In development, use python3 directly
-    return 'python3'
+    return 'python3';
   }
 }
 
@@ -69,11 +88,30 @@ function setupEnvironment() {
 
   // Set Playwright browsers path for bundled version
   if (app.isPackaged) {
-    env.PLAYWRIGHT_BROWSERS_PATH = path.join(
-      process.resourcesPath,
-      'python-executable',
-      'playwright-browsers'
-    )
+    // Try multiple possible locations for the browsers
+    const possibleBrowserPaths = [
+      path.join(process.resourcesPath, 'python-executable', 'playwright-browsers'),
+      path.join(process.resourcesPath, 'app', 'python-executable', 'playwright-browsers'),
+      path.join(process.resourcesPath, 'resources', 'playwright-browsers'),
+      path.join(process.cwd(), 'python-executable', 'playwright-browsers')
+    ];
+    
+    // Find the first path that exists
+    for (const browserPath of possibleBrowserPaths) {
+      try {
+        if (fs.existsSync(browserPath)) {
+          env.PLAYWRIGHT_BROWSERS_PATH = browserPath;
+          console.log('Using Playwright browsers from:', browserPath);
+          break;
+        }
+      } catch (e) {
+        console.error('Error checking browser path:', e);
+      }
+    }
+    
+    if (!env.PLAYWRIGHT_BROWSERS_PATH) {
+      console.error('Could not find Playwright browsers in any of the expected locations');
+    }
   }
 
   return env
@@ -95,15 +133,20 @@ ipcMain.on('start-python', (event) => {
   console.log('Executable path:', executablePath)
   console.log('Arguments:', args)
   console.log('Working directory:', os.homedir())
+  console.log('Environment:', JSON.stringify(env, null, 2))
+  console.log('Resources path:', process.resourcesPath)
+  console.log('Current directory:', process.cwd())
+  console.log('__dirname:', __dirname)
 
   // Check if executable exists (in production)
   if (app.isPackaged) {
-    if (!fs.existsSync(executablePath)) {
-      event.sender.send(
-        'python-output',
-        `[ERROR] Python executable not found at: ${executablePath}\n`
-      )
-      return
+    if (!executablePath || !fs.existsSync(executablePath)) {
+      const errorMsg = `[ERROR] Python executable not found at: ${executablePath}\n` +
+        'Please make sure the Python executable was built and included in the app package.\n' +
+        'Run "npm run build-python" before building the app.\n';
+      console.error(errorMsg);
+      event.sender.send('python-output', errorMsg);
+      return;
     }
 
     // Make sure it's executable (important for Linux)

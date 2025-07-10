@@ -9,12 +9,13 @@
     "build-linux": "electron-builder --linux",
     "build-windows": "electron-builder --win",
     "build-mac": "electron-builder --mac",
-    "build-python": "cd webautomate_ai && poetry run pyinstaller --onefile --console --name WebAgent --distpath ../dist/python-executable --add-data 'modules:modules' --add-data 'utils:utils' --hidden-import browser_use --hidden-import playwright --hidden-import google.generativeai --hidden-import httpx --hidden-import dotenv agent.py",
-    "build-python-win": "cd webautomate_ai && poetry run pyinstaller --onefile --console --name WebAgent.exe --distpath ../dist/python-executable --add-data 'modules:modules' --add-data 'utils:utils' --hidden-import browser_use --hidden-import playwright --hidden-import google.generativeai --hidden-import httpx --hidden-import dotenv agent.py",
-    "build-python-mac": "cd webautomate_ai && poetry run pyinstaller --onefile --console --name WebAgent --distpath ../dist/python-executable --add-data 'modules:modules' --add-data 'utils:utils' --hidden-import browser_use --hidden-import playwright --hidden-import google.generativeai --hidden-import httpx --hidden-import dotenv agent.py",
-    "build-all": "npm run build-python && npm run build-linux",
-    "build-all-windows": "npm run build-python-win && npm run build-windows",
-    "build-all-mac": "npm run build-python-mac && npm run build-mac",
+    "prepare-python": "cd webautomate_ai && poetry install --with dev",
+    "build-python": "cd webautomate_ai && poetry run python build.py && mkdir -p ../dist/python-executable && cp dist/WebAgent ../dist/python-executable/ && chmod +x ../dist/python-executable/WebAgent",
+    "build-python-win": "cd webautomate_ai && poetry run python build.py && mkdir -p ../dist/python-executable && cp dist/WebAgent.exe ../dist/python-executable/WebAgent.exe",
+    "build-python-mac": "cd webautomate_ai && poetry run python build.py && mkdir -p ../dist/python-executable && cp dist/WebAgent ../dist/python-executable/ && chmod +x ../dist/python-executable/WebAgent",
+    "build-all": "npm run prepare-python && npm run build-python && npm run build-linux",
+    "build-all-windows": "npm run prepare-python && npm run build-python-win && npm run build-windows",
+    "build-all-mac": "npm run prepare-python && npm run build-python-mac && npm run build-mac",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [
@@ -36,8 +37,19 @@
     },
     "extraResources": [
       {
-        "from": "dist/python-executable/",
-        "to": "python-executable/"
+        "from": "python-executable",
+        "to": "python-executable"
+      },
+      {
+        "from": "webautomate_ai/playwright-browsers",
+        "to": "python-executable/playwright-browsers"
+      }
+    ],
+    "extraFiles": [
+      {
+        "from": "webautomate_ai/playwright-browsers",
+        "to": "resources/playwright-browsers",
+        "filter": ["**/*"]
       }
     ],
     "files": [
